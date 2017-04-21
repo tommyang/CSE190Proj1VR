@@ -24,6 +24,13 @@ void MatrixTransform::draw(glm::mat4 C)
 
     Group::draw(M_new);
 }
+void MatrixTransform::draw(glm::mat4 C, GLint shaderProgram, glm::mat4 P, glm::mat4 V)
+{
+
+	glm::mat4 M_new = C * M;
+
+	Group::draw(M_new, shaderProgram, P, V);
+}
 
 void MatrixTransform::rotate(float angle, glm::vec3 axis)
 {

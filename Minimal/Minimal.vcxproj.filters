@@ -36,6 +36,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="shader2.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="shader2.vert">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Geode.h">

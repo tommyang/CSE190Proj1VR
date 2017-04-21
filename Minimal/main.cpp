@@ -769,6 +769,7 @@ protected:
 #include "MatrixTransform.h"
 struct SimScene {
 	Model * factory;
+	MatrixTransform * factory_mt;
 	Group * co2Group;
 	Group * o2Group;
 	Model * co2;
@@ -791,6 +792,9 @@ public:
 		co2 = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/co2/co2.obj");
 		o2 = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/o2/o2.obj");
 
+		factory_mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, -20.0f)));
+		factory_mt->addChild(factory);
+
 		co2Group = new Group();
 		for (int i = 0; i < 5; i++) {
 			create_co2();
@@ -798,11 +802,11 @@ public:
 		last_co2_time = time(0);
 	}
 
-	void render(const mat4 & projection, const mat4 & modelview) {
+	void update() {
 		co2Group->update();
-		// Clear the color and depth buffers
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
 
+	void render(const mat4 & projection, const mat4 & modelview) {
 		// Use the shader of programID
 		glUseProgram(shaderProgram);
 
@@ -851,7 +855,7 @@ public:
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].linear"), 0.2f); // 0.09
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].quadratic"), 0.032f); // 0.032
 
-		factory->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
+		factory_mt->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
 		co2Group->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
 	}
 
@@ -894,6 +898,10 @@ protected:
 
 	void shutdownGl() override {
 		simScene.reset();
+	}
+
+	void update() override {
+		simScene->update();
 	}
 
 	void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose) override {

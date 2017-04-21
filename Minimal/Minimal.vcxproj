@@ -140,6 +140,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="shader2.frag" />
+    <None Include="shader2.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Geode.h" />

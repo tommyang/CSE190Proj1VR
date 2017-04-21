@@ -18,6 +18,7 @@ public:
     MatrixTransform(glm::mat4 M);
     ~MatrixTransform();
     void draw(glm::mat4 C);
+	void draw(glm::mat4 C, GLint shaderProgram, glm::mat4 P, glm::mat4 V);
     void rotate(float angle, glm::vec3 axis);
     void scale(float mult);
     void translate(float x, float y, float z);
