@@ -777,8 +777,8 @@ struct SimScene {
 	time_t last_co2_time;
 	std::default_random_engine generator;
 
-#define VERTEX_SHADER2_PATH "C:/Users/tiyang/Desktop/CSE190Project1/shader2.vert"
-#define FRAGMENT_SHADER2_PATH "C:/Users/tiyang/Desktop/CSE190Project1/shader2.frag"
+#define VERTEX_SHADER2_PATH "C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/shader2.vert"
+#define FRAGMENT_SHADER2_PATH "C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/shader2.frag"
 
 public:
 	static glm::mat4 P; // P for projection
@@ -787,9 +787,9 @@ public:
 	SimScene() {
 		shaderProgram = LoadShaders(VERTEX_SHADER2_PATH, FRAGMENT_SHADER2_PATH);
 
-		factory = new Model("C:/Users/tiyang/Desktop/CSE190Project1/assets/factory1/factory1.obj");
-		co2 = new Model("C:/Users/tiyang/Desktop/CSE190Project1/assets/co2/co2.obj");
-		o2 = new Model("C:/Users/tiyang/Desktop/CSE190Project1/assets/o2/o2.obj");
+		factory = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/factory1/factory1.obj");
+		co2 = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/co2/co2.obj");
+		o2 = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/o2/o2.obj");
 
 		co2Group = new Group();
 		for (int i = 0; i < 5; i++) {

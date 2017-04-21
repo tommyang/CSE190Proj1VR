@@ -188,6 +188,7 @@ public:
 		glUniform3f(uSpecular, material.specular.r, material.specular.g, material.specular.b);
 		glUniform1f(uShininess, material.shininess);
 		// Bind appropriate textures
+		/*
 		GLuint diffuseNr = 1;
 		GLuint specularNr = 1;
 		for (GLuint i = 0; i < this->textures.size(); i++)
@@ -207,6 +208,7 @@ public:
 			// And finally bind the texture
 			glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
 		}
+		*/
 
 		// Also set each mesh's shininess property to a default value (if you want you could extend this to another mesh property and possibly change this value)
 		// glUniform1f(glGetUniformLocation(shaderProgram, "material.shininess"), 16.0f);
@@ -217,11 +219,13 @@ public:
 		glBindVertexArray(0);
 
 		// Always good practice to set everything back to defaults once configured.
+		/*
 		for (GLuint i = 0; i < this->textures.size(); i++)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+		*/
 	}
 
     void update() {
