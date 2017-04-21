@@ -767,7 +767,15 @@ protected:
 #include "Model.h"
 #include "Group.h"
 #include "MatrixTransform.h"
+#include "Line.h"
 struct SimScene {
+	bool isPlaying = true;
+	bool l_pressed;
+	bool r_pressed;
+	Line * l_line;
+	Line * r_line;
+	MatrixTransform * l_line_mt;
+	MatrixTransform * r_line_mt;
 	Model * factory;
 	MatrixTransform * factory_mt;
 	Group * co2Group;
@@ -782,6 +790,11 @@ struct SimScene {
 #define FRAGMENT_SHADER2_PATH "C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/shader2.frag"
 
 public:
+	bool leftHandTriggerPressed;
+	bool rightHandTriggerPressed;
+	glm::mat4 left_transf;
+	glm::mat4 right_transf;
+
 	static glm::mat4 P; // P for projection
 	static glm::mat4 V; // V for view
 
@@ -791,19 +804,87 @@ public:
 		factory = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/factory1/factory1.obj");
 		co2 = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/co2/co2.obj");
 		o2 = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/o2/o2.obj");
+		l_line = new Line();
+		r_line = new Line();
+		l_line_mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+		r_line_mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+		l_line_mt->addChild(l_line);
+		r_line_mt->addChild(r_line);
 
-		factory_mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, -20.0f)));
+		factory_mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, -15.0f)));
 		factory_mt->addChild(factory);
 
 		co2Group = new Group();
+		o2Group = new Group();
 		for (int i = 0; i < 5; i++) {
-			create_co2();
+			create_co2(true);
 		}
 		last_co2_time = time(0);
 	}
 
-	void update() {
+	bool update() {
+		bool hit = false;
+		if (isPlaying) {
+			auto it = (co2Group->children).begin();
+			while (it != co2Group->children.end()) {
+				bool left_collide = check(l_line, left_transf, it);
+				bool right_collide = check(r_line, right_transf, it);
+				if (leftHandTriggerPressed && rightHandTriggerPressed && left_collide && right_collide) {
+					MatrixTransform *tmp = new MatrixTransform(glm::mat4(1.0));
+					tmp->M = (dynamic_cast<MatrixTransform*> (*it))->M;
+					tmp->deg = (dynamic_cast<MatrixTransform*> (*it))->deg;
+					tmp->axis = (dynamic_cast<MatrixTransform*> (*it))->axis;
+					tmp->move = (dynamic_cast<MatrixTransform*> (*it))->move;
+					tmp->pos = (dynamic_cast<MatrixTransform*> (*it))->pos;
+					tmp->addChild(o2);
+					o2Group->addChild(tmp);
+					co2Group->children.erase(it++);
+					hit = true;
+				}
+				else ++it;
+			}
+			if (co2Group->children.empty()) {
+				glClearColor(0.0f, 191.0f / 255.f, 1.0f, 1.0f);
+				isPlaying = false;
+			}
+			else if (co2Group->children.size() > 10) {
+				for (int i = 0; i < 100; i++) {
+					create_co2(true);
+				}
+				isPlaying = false;
+			}
+		}
 		co2Group->update();
+		o2Group->update();
+
+		return hit;
+	}
+
+	bool check(Line* line, glm::mat4 transf, list<Node*>::iterator it) {
+		vec4 v1(0.0f, 0.0f, 0.0f, 1.0f);
+		vec4 v2(0.0f, 0.0f, -100.0f, 1.0f);
+		vec4 tmp1 = transf*v1;
+		vec4 tmp2 = transf*v2;
+		vec3 x1(tmp1.x, tmp1.y, tmp1.z);
+		vec3 x2(tmp2.x, tmp2.y, tmp2.z);
+		vec3 x0 = (dynamic_cast<MatrixTransform*> (*it)) -> pos;
+		float d = glm::length(glm::cross((x2 - x1), (x1 - x0))) / glm::length(x2 - x1);
+		if (d < 1) return true;
+		else return false;
+	}
+
+	void reset() {
+		if (isPlaying) return;
+		co2Group->children.clear();
+		o2Group->children.clear();
+		glClearColor(0.0f, 0.0f, 128.0f / 255.0f, 1.0f);
+
+		isPlaying = true;
+
+		for (int i = 0; i < 5; i++) {
+			create_co2(true);
+		}
+		last_co2_time = time(0);
 	}
 
 	void render(const mat4 & projection, const mat4 & modelview) {
@@ -812,9 +893,9 @@ public:
 
 		time_t cur_time = time(0);
 		double seconds = difftime(cur_time, last_co2_time);
-		if (seconds >= 1.0) {
+		if (seconds >= 1.4 && isPlaying) {
 			last_co2_time = cur_time;
-			create_co2();
+			create_co2(false);
 		}
 
 		// light
@@ -825,16 +906,17 @@ public:
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[0].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[0].specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[0].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[0].linear"), 0.2f); // 0.09
+		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[0].linear"), 0.09f); // 0.09
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[0].quadratic"), 0.032f); // 0.032
 
-		pointLightPosition = glm::vec3(10.0f, -10.0f, 5.0f);
+		
+		pointLightPosition = glm::vec3(10.0f, 10.0f, -20.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[1].position"), pointLightPosition.x, pointLightPosition.y, pointLightPosition.z);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[1].ambient"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[1].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[1].specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[1].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[1].linear"), 0.2f); // 0.09
+		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[1].linear"), 0.09f); // 0.09
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[1].quadratic"), 0.032f); // 0.032
 
 		pointLightPosition = glm::vec3(-10.0f, 10.0f, 5.0f);
@@ -843,31 +925,39 @@ public:
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[2].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[2].specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[2].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[2].linear"), 0.2f); // 0.09
+		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[2].linear"), 0.09f); // 0.09
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[2].quadratic"), 0.032f); // 0.032
 
-		pointLightPosition = glm::vec3(-10.0f, -10.0f, 5.0f);
+		pointLightPosition = glm::vec3(-10.0f, 10.0f, -20.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[3].position"), pointLightPosition.x, pointLightPosition.y, pointLightPosition.z);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[3].ambient"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[3].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[3].specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].linear"), 0.2f); // 0.09
+		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].linear"), 0.09f); // 0.09
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].quadratic"), 0.032f); // 0.032
+		
 
 		factory_mt->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
 		co2Group->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
+		o2Group->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
+		l_line->pressed = leftHandTriggerPressed;
+		r_line->pressed = rightHandTriggerPressed;
+		l_line_mt->draw(left_transf, shaderProgram, projection, modelview);
+		r_line_mt->draw(right_transf, shaderProgram, projection, modelview);
 	}
 
 private:
-	void create_co2() {
+	void create_co2(bool first_create) {
 		std::uniform_real_distribution<float> plus_minus_one_dist(-1.0, 1.0);
 		std::uniform_real_distribution<float> plus_one_dist(0.0, 1.0);
-		MatrixTransform* mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(plus_minus_one_dist(generator) * 10.0f, plus_minus_one_dist(generator) * 10.0f, plus_one_dist(generator) * -10.0f)));
+		MatrixTransform* mt;
+		if( first_create ) mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(plus_minus_one_dist(generator) * 9.0f, plus_minus_one_dist(generator) * 9.0f, plus_one_dist(generator) * -19.0f)));
+		else mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -9.0f, -15.0f) ) );
 		mt->deg = plus_minus_one_dist(generator);
 		mt->axis = glm::vec3(plus_minus_one_dist(generator), plus_minus_one_dist(generator), plus_minus_one_dist(generator));
-		mt->move = glm::vec3(plus_minus_one_dist(generator) / 20.0f, plus_one_dist(generator) / 20.0f, plus_minus_one_dist(generator) / 20.0f); // upwards
-		mt->scale(0.5f);
+		mt->move = glm::vec3(plus_minus_one_dist(generator) / 50.0f, plus_one_dist(generator) / 50.0f, plus_minus_one_dist(generator) / 50.0f); // upwards
+		mt->scale(0.4f);
 		mt->addChild(co2);
 		co2Group->addChild(mt);
 	}
@@ -879,6 +969,11 @@ class SimApp : public RiftApp {
 public:
 	SimApp() {}
 protected:
+	bool leftHandTriggerPressed = false;
+	bool rightHandTriggerPressed = false;
+	glm::mat4 left_transf;
+	glm::mat4 right_transf;
+
 	void initGl() override {
 		RiftApp::initGl();
 		// Enable depth buffering
@@ -891,7 +986,7 @@ protected:
 		// Disable backface culling to render both sides of polygons
 		glDisable(GL_CULL_FACE);
 		// Set clear color
-		glClearColor(0.0f, 0.0f, 139.0f / 255.0f, 1.0f);
+		glClearColor(0.0f, 0.0f, 128.0f / 255.0f, 1.0f);
 		ovr_RecenterTrackingOrigin(_session);
 		simScene = std::shared_ptr<SimScene>(new SimScene());
 	}
@@ -901,7 +996,36 @@ protected:
 	}
 
 	void update() override {
-		simScene->update();
+		ovr_SetControllerVibration(_session, ovrControllerType_LTouch, 1.0f, 0.0f);
+		ovr_SetControllerVibration(_session, ovrControllerType_RTouch, 1.0f, 0.0f);
+		bool hit = simScene->update();
+		if (hit) {
+			ovr_SetControllerVibration(_session, ovrControllerType_LTouch, 1.0f, 1.0f);
+			ovr_SetControllerVibration(_session, ovrControllerType_RTouch, 1.0f, 1.0f);
+		}
+
+		double displayMidpointSeconds = ovr_GetPredictedDisplayTime(_session, frame);
+		ovrTrackingState trackState = ovr_GetTrackingState(_session, displayMidpointSeconds, ovrTrue);
+
+		// determine whether left hand trigger pressed
+		ovrInputState inputState;
+
+		if (OVR_SUCCESS(ovr_GetInputState(_session, ovrControllerType_Touch, &inputState))) {
+			if (inputState.Buttons) {
+				simScene->reset();
+			}
+
+			if (inputState.IndexTrigger[ovrHand_Left] > 0.5f) simScene->leftHandTriggerPressed = true;
+			else simScene->leftHandTriggerPressed = false;
+
+			if (inputState.IndexTrigger[ovrHand_Right] > 0.5f) simScene->rightHandTriggerPressed = true;
+			else simScene->rightHandTriggerPressed = false;
+		}
+		ovrPosef leftPose = trackState.HandPoses[ovrHand_Left].ThePose;
+		simScene->left_transf = ovr::toGlm(leftPose);
+
+		ovrPosef rightPose = trackState.HandPoses[ovrHand_Right].ThePose;
+		simScene->right_transf = ovr::toGlm(rightPose);
 	}
 
 	void renderScene(const glm::mat4 & projection, const glm::mat4 & headPose) override {

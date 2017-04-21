@@ -14,7 +14,8 @@ MatrixTransform::MatrixTransform(glm::mat4 M)
     this->deg = 0.0f;
     this->axis = glm::vec3(0.0f, 1.0f, 0.0f);
     this->move = glm::vec3(0.0f, 0.0f, 0.0f);
-	this->pos = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec4 tmp_pos = M * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	this->pos = glm::vec3(tmp_pos.x, tmp_pos.y, tmp_pos.z);
 }
 
 void MatrixTransform::draw(glm::mat4 C)
@@ -110,12 +111,12 @@ void MatrixTransform::update()
 		this->pos = this->pos + this->move;
 		this->translate((this->move).x, (this->move).y, (this->move).z);
 	}
-	if (this->pos.y > 10.0 || this->pos.y < 0.0) {
+	if (this->pos.y > 10.0 || this->pos.y < -10.0) {
 		this->move.y = -this->move.y;
 		this->pos = this->pos + this->move;
 		this->translate((this->move).x, (this->move).y, (this->move).z);
 	}
-	if (this->pos.z > 10.0 || this->pos.z < -10.0) {
+	if (this->pos.z > 0.0 || this->pos.z < -20.0) {
 		this->move.z = -this->move.z;
 		this->pos = this->pos + this->move;
 		this->translate((this->move).x, (this->move).y, (this->move).z);

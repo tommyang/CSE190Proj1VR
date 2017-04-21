@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="Geode.cpp" />
     <ClCompile Include="Group.cpp" />
+    <ClCompile Include="Line.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MatrixTransform.cpp" />
     <ClCompile Include="shader.cpp" />
@@ -146,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="Geode.h" />
     <ClInclude Include="Group.h" />
+    <ClInclude Include="Line.h" />
     <ClInclude Include="MatrixTransform.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
