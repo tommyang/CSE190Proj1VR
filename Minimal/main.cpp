@@ -606,8 +606,8 @@ struct SimScene {
 	time_t last_co2_time;
 	std::default_random_engine generator;
 
-#define VERTEX_SHADER2_PATH "C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/shader2.vert"
-#define FRAGMENT_SHADER2_PATH "C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/shader2.frag"
+#define VERTEX_SHADER2_PATH "C:/Users/degu/Desktop/CSE190Proj1VR/Minimal/shader2.vert"
+#define FRAGMENT_SHADER2_PATH "C:/Users/degu/Desktop/CSE190Proj1VR/Minimal/shader2.frag"
 
 public:
 	bool leftHandTriggerPressed;
@@ -621,9 +621,10 @@ public:
 	SimScene() {
 		shaderProgram = LoadShaders(VERTEX_SHADER2_PATH, FRAGMENT_SHADER2_PATH);
 
-		factory = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/factory1/factory1.obj");
-		co2 = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/co2/co2.obj");
-		o2 = new Model("C:/Users/tiyang/Desktop/CSE190Proj1VR/Minimal/assets/o2/o2.obj");
+		//factory = new Model("C:/Users/degu/Desktop/CSE190Proj1VR/Minimal/assets/factory1/factory1.obj");
+		factory = new Model("C:/Users/degu/Downloads/digital_x_free_25_ping_pong/X025_017.obj");
+		co2 = new Model("C:/Users/degu/Desktop/CSE190Proj1VR/Minimal/assets/co2/co2.obj");
+		o2 = new Model("C:/Users/degu/Desktop/CSE190Proj1VR/Minimal/assets/o2/o2.obj");
 		l_line = new Line();
 		r_line = new Line();
 		l_line_mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
@@ -631,7 +632,7 @@ public:
 		l_line_mt->addChild(l_line);
 		r_line_mt->addChild(r_line);
 
-		factory_mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, -15.0f)));
+		factory_mt = new MatrixTransform(glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)), glm::vec3(0.0f, -40.0f, -20.0f)));
 		factory_mt->addChild(factory);
 
 		co2Group = new Group();
@@ -736,7 +737,7 @@ public:
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[1].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[1].specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[1].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[1].linear"), 0.09f); // 0.09
+		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[1].linear"), 0.009f); // 0.09
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[1].quadratic"), 0.032f); // 0.032
 
 		pointLightPosition = glm::vec3(-10.0f, 10.0f, 5.0f);
@@ -754,17 +755,17 @@ public:
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[3].diffuse"), 1.0f, 1.0f, 1.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram, "pointLight[3].specular"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].linear"), 0.09f); // 0.09
+		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].linear"), 0.009f); // 0.09
 		glUniform1f(glGetUniformLocation(shaderProgram, "pointLight[3].quadratic"), 0.032f); // 0.032
 		
 
 		factory_mt->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
-		co2Group->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
-		o2Group->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
-		l_line->pressed = leftHandTriggerPressed;
-		r_line->pressed = rightHandTriggerPressed;
-		l_line_mt->draw(left_transf, shaderProgram, projection, modelview);
-		r_line_mt->draw(right_transf, shaderProgram, projection, modelview);
+		//co2Group->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
+		//o2Group->draw(glm::mat4(1.0f), shaderProgram, projection, modelview);
+		//l_line->pressed = leftHandTriggerPressed;
+		//r_line->pressed = rightHandTriggerPressed;
+		//l_line_mt->draw(left_transf, shaderProgram, projection, modelview);
+		//r_line_mt->draw(right_transf, shaderProgram, projection, modelview);
 	}
 
 private:
